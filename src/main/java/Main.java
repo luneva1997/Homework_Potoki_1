@@ -15,13 +15,13 @@ public class Main {
         long startTs = System.currentTimeMillis(); // start time
 
         //Создание списка потоков
-        List<FutureTask<Integer>> futures = new ArrayList<>();
+        List<Thread> threads = new ArrayList<>();
 
         for (String text : texts) {
             //Создаем поток и реализуем логику
-            Callable<Integer> callable;
+            Runnable r;
 
-            futures.add(new FutureTask<> (callable = () -> {
+            threads.add(new Thread(r = () -> {
                 int maxSize = 0;
                 for (int i = 0; i < text.length(); i++) {
                     for (int j = 0; j < text.length(); j++) {
@@ -41,20 +41,13 @@ public class Main {
                     }
                 }
                 System.out.println(text.substring(0, 100) + " -> " + maxSize);
-                return maxSize;
             }
             ));
         }
 
         int max = 0;
 
-        List<Thread> threads = new ArrayList<>();
-
         //Запуск потоков
-        for (FutureTask<Integer> one : futures) {
-            threads.add(new Thread(one));
-        }
-
         for (Thread thread: threads){
             thread.start();
         }
@@ -66,21 +59,6 @@ public class Main {
         long endTs = System.currentTimeMillis(); // end time
         System.out.println("Time: " + (endTs - startTs) + "ms");
 
-        for (FutureTask<Integer> one : futures){
-            int newMax;
-
-            try {
-                newMax = one.get();
-            } catch (InterruptedException | ExecutionException ex){
-                return;
-            }
-
-            if (newMax>max){
-                max = newMax;
-            }
-        }
-
-        System.out.println("Maximum: " + max);
     }
 
     public static String generateText(String letters, int length) {
